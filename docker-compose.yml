@@ -1,0 +1,38 @@
+version: '3'
+# Note: Considering adding profiles for dev vs prod, but not super important right now
+
+# These are the two containers that will be created for you when running the project
+services:
+  # This holds all your current version of the backend code
+  backend:
+    container_name: backend
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: dev # Using the dev stage from the Dockerfile
+    volumes:
+      - .:/app:delegated # This flag does nothing, however it's there just incase you somehow have a really old docker version
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database # Will not start running till the db starts up
+    environment:
+      - DB_HOST=database
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+
+  database:
+    container_name: database 
+    image: postgres # Uses the standard postgres image
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
