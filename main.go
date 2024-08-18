@@ -1,33 +1,29 @@
 package main
 
 import (
-	"net/http"
+    "log"
 
+	"github.com/joho/godotenv"
+	"github.com/MountVesuvius/go-gin-postgres-template/initialize"
+	"github.com/MountVesuvius/go-gin-postgres-template/routes"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+    // Load Environment Variables
+    err := godotenv.Load()   
+    if err != nil {
+        log.Fatal("Error loading environment variables: ", err)
+    }
+
+    // Setup Database
+    initialize.ConnectToDatabase()
+    initialize.SyncDatabase()
+
+    // Setup Router
     router := gin.Default()
 
-    router.GET("/", func(context *gin.Context) {
-        context.JSON(http.StatusOK, gin.H {
-            "message": "base route",
-        })
-    })
-
-    router.GET("/kaboom", func(context *gin.Context) {
-        context.JSON(http.StatusOK, gin.H {
-            "message": "MountVesuvius",
-        })
-    })
-
-    router.GET("/:val", func(context *gin.Context) {
-        val := context.Param("val")
-
-        context.JSON(http.StatusOK, gin.H {
-            "message": val,
-        })
-    })
+    routes.Auth(router)
 
     router.Run()
 }
