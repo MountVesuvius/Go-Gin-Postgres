@@ -78,7 +78,7 @@ func Auth(router *gin.Engine) {
         initialize.DB.First(&user, "email = ?", body.Email)
 
         if user.ID == 0 {
-            context.JSON(http.StatusBadRequest, gin.H {
+            context.JSON(http.StatusUnauthorized, gin.H {
                 "error": "Invalid email or password",
             })
             return
@@ -86,7 +86,7 @@ func Auth(router *gin.Engine) {
 
         err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
         if err != nil {
-            context.JSON(http.StatusBadRequest, gin.H {
+            context.JSON(http.StatusUnauthorized, gin.H {
                 "error": "Invalid email or password",
             })
             return
