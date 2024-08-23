@@ -12,7 +12,7 @@ import (
 func User(router *gin.Engine, controller controllers.UserController, jwtService services.JWTService) {
 	routes := router.Group("/api/user") 
 
-    routes.POST("/signup", controller.dignup)
+    routes.POST("/signup", controller.Signup)
     routes.POST("/login", controller.Login)
 
     // temp route remember to delete
