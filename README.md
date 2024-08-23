@@ -4,8 +4,9 @@ straight coding tasks:
 - [x] setup connection between postgres and backend using gorm
 - [x] basic user model to test jwt auth
 - [x] connected Air to have hot reloading during development
-- [x] singing jwt access and refresh tokens
-- [ ] writing the authentication middleware
+- [x] signing jwt access and refresh tokens
+- [x] writing the authentication middleware
+- [ ] refresh access token
 
 coding but still vague
 - [ ] figure out how unit tests

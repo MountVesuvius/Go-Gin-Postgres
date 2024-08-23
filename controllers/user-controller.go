@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/MountVesuvius/go-gin-postgres-template/dto"
+	"github.com/MountVesuvius/go-gin-postgres-template/helpers"
 	"github.com/MountVesuvius/go-gin-postgres-template/initialize"
 	"github.com/MountVesuvius/go-gin-postgres-template/models"
 	"github.com/MountVesuvius/go-gin-postgres-template/services"
@@ -60,11 +61,13 @@ func (u *userController) Validate (context *gin.Context) {
 func (u *userController) Signup (context *gin.Context) {
     var body dto.Body
 
+    genericResponse := helpers.BuildFailedResponse("Unexpected error occured. Please try again later", nil, nil)
+
     // Ensure payload is correctly structured 
-    if context.Bind(&body) != nil {
-        context.JSON(http.StatusBadRequest, gin.H{
-            "error": "Failed to read body",
-        })
+    bindErr := context.Bind(&body)
+    if bindErr != nil {
+        response := helpers.BuildFailedResponse("Failed to read body", bindErr, nil)
+        context.JSON(http.StatusBadRequest, response)
         return 
     }
 
@@ -73,75 +76,70 @@ func (u *userController) Signup (context *gin.Context) {
     // https://stackoverflow.com/questions/4443476/optimal-bcrypt-work-factor/61304956#61304956
     hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
     if err != nil {
-        context.JSON(http.StatusInternalServerError, gin.H {
-            "error": "Unexpected error occured. Please try again later",
-        })
+        fmt.Println("bcrypt error when hashing password", err)
+        context.JSON(http.StatusInternalServerError, genericResponse)
         return
     }
 
     // Add user to database
-    user := models.User{Email: body.Email, Password: string(hash)}
+    user := models.User{ Email: body.Email, Password: string(hash) }
     result := initialize.DB.Create(&user)
     if result.Error != nil {
-        context.JSON(http.StatusInternalServerError, gin.H {
-            "error": "Unexpected error occured. Please try again later",
-        })
+        fmt.Println("error creating the user", result.Error)
+        context.JSON(http.StatusInternalServerError, genericResponse)
         return
     }
 
-    context.JSON(http.StatusOK, gin.H {
-        "message": user,
-    })
+    response := helpers.BuildSuccessfulResponse("Sucessfully created user", user)
+    context.JSON(http.StatusOK, response)
 }
 
 func (u *userController) Login (context *gin.Context) {
     var body dto.Body
 
     // Ensure payload is correctly structured 
-    if context.Bind(&body) != nil {
-        context.JSON(http.StatusBadRequest, gin.H{
-            "error": "Failed to read body",
-        })
+    bindErr := context.Bind(&body)
+    if bindErr != nil {
+        response := helpers.BuildFailedResponse("Failed to read body", bindErr, nil)
+        context.JSON(http.StatusBadRequest, response)
         return 
     }
 
     // this should be a service itself
+    // ----------
     var user models.User
 
     // Find the user
     initialize.DB.First(&user, "email = ?", body.Email)
 
     if user.ID == 0 {
-        context.JSON(http.StatusUnauthorized, gin.H {
-            "error": "Invalid email or password",
-        })
+        response := helpers.BuildFailedResponse("Invalid Email or Password", nil, nil)
+        context.JSON(http.StatusUnauthorized, response)
         return
     }
 
-    // validate the password
+    // Validate the password
     err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
     if err != nil {
-        context.JSON(http.StatusUnauthorized, gin.H {
-            "error": "Invalid email or password",
-        })
+        response := helpers.BuildFailedResponse("Invalid Email or Password", nil, nil)
+        context.JSON(http.StatusUnauthorized, response)
         return
     }
     // end of user service
+    // ----------
 
     // Register new jwt claims
     userIdString := strconv.FormatUint(uint64(user.ID), 10)
     accessToken, err := u.jwtService.GenerateAccessToken(userIdString, "user")
     if err != nil {
-        fmt.Println("access token error:", err)
+        fmt.Println("Access token error:", err)
     }
     refreshToken, err := u.jwtService.GenerateRefreshToken()
     if err != nil {
         fmt.Println("refresh token error:", err)
     }
-    fmt.Println("Hello these are tokens")
-    fmt.Println("accesstoken:", accessToken)
-    fmt.Println("refreshtoken:", refreshToken)
 
+    // Custom response to save on space
     context.JSON(http.StatusOK, gin.H {
         "access": accessToken,
         "refresh": refreshToken,

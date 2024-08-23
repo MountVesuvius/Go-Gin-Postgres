@@ -30,8 +30,7 @@ func main() {
 
     // Setup Router
     router := gin.Default()
-
-    routes.User(router, userController)
-
+    routes.User(router, userController, jwtService)
+    routes.Auth(router, jwtService)
     router.Run()
 }

@@ -1,9 +1,9 @@
 package services
 
 import (
-	"fmt"
 	"os"
 	"time"
+    "fmt"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -40,14 +40,12 @@ func (j *jwtService) GenerateAccessToken(userId string, role string) (string, er
         "role": "user-role",
         "type": "access",
     })
-    fmt.Println("Access Token Generation", token)
 
     // Sign the access token
     tokenString, err := token.SignedString(j.secretKey)
     if err != nil {
         return "", err
     }
-    fmt.Println("Signed Access Token Generation", tokenString)
     return tokenString, nil
 }
 
@@ -71,7 +69,7 @@ func (j *jwtService) GenerateRefreshToken() (string, error) {
 func (j *jwtService) ValidateToken (tokenString string) (*jwt.Token, error) {
     token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
         if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-            return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+            return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
         }
 
         return j.secretKey, nil
@@ -82,7 +80,7 @@ func (j *jwtService) ValidateToken (tokenString string) (*jwt.Token, error) {
     }
 
     if !token.Valid {
-        return nil, fmt.Errorf("invalid token")
+        return nil, fmt.Errorf("Invalid Token")
     }
     return token, nil
 }
