@@ -1,12 +1,14 @@
 package main
 
 import (
-    "log"
+	"log"
 
-	"github.com/joho/godotenv"
+	"github.com/MountVesuvius/go-gin-postgres-template/controllers"
 	"github.com/MountVesuvius/go-gin-postgres-template/initialize"
 	"github.com/MountVesuvius/go-gin-postgres-template/routes"
+	"github.com/MountVesuvius/go-gin-postgres-template/services"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -20,10 +22,16 @@ func main() {
     initialize.ConnectToDatabase()
     initialize.SyncDatabase()
 
+    // Setup Services
+    jwtService := services.NewJWTService()
+
+    // Setup Controllers
+    userController := controllers.NewUserController(jwtService)
+
     // Setup Router
     router := gin.Default()
 
-    routes.Auth(router)
+    routes.User(router, userController)
 
     router.Run()
 }
