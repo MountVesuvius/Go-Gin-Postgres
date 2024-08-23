@@ -2,6 +2,7 @@
 package routes
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/MountVesuvius/go-gin-postgres-template/dto"
 	"github.com/MountVesuvius/go-gin-postgres-template/initialize"
 	"github.com/MountVesuvius/go-gin-postgres-template/models"
+	"github.com/MountVesuvius/go-gin-postgres-template/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -132,17 +134,35 @@ func Auth(router *gin.Engine) {
             return
         }
 
+        // parseaccess, err := ValidateToken(accessString)
+
         context.JSON(http.StatusOK, gin.H {
             "access": accessString,
+            "accessParsed": "",
             "refresh": refreshString,
+            "refreshParsed": "",
         })
     })
 
     routes.GET("/validate", func(context *gin.Context) {
+        gen := services.NewJWTService()
+        tokenString, err := gen.GenerateToken("username", "role")
+        if err != nil {
+            log.Fatalln("Error creating JWT:", err)
+            return
+        }
+
+        token, err := gen.ValidateToken(tokenString)
+        if err != nil {
+            log.Fatalln("Error parsing JWT:", err)
+            return
+        }
         // controller code
-        context.JSON(http.StatusNotImplemented, gin.H {
-            "message": "not yet implemented validate",
+        context.JSON(http.StatusOK, gin.H {
+            "string": tokenString,
+            "parsed": token,
         })
     })
 
 }
+
