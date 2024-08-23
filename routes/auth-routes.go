@@ -3,12 +3,15 @@ package routes
 
 import (
 	"net/http"
+	"os"
+	"time"
 
 	// "github.com/MountVesuvius/go-gin-postgres-template/controllers"
 	"github.com/MountVesuvius/go-gin-postgres-template/dto"
 	"github.com/MountVesuvius/go-gin-postgres-template/initialize"
 	"github.com/MountVesuvius/go-gin-postgres-template/models"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -74,7 +77,7 @@ func Auth(router *gin.Engine) {
 
         var user models.User
 
-        // don't really like this solution 
+        // Find the user
         initialize.DB.First(&user, "email = ?", body.Email)
 
         if user.ID == 0 {
@@ -84,6 +87,7 @@ func Auth(router *gin.Engine) {
             return
         }
 
+        // validate the password
         err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
         if err != nil {
             context.JSON(http.StatusUnauthorized, gin.H {
@@ -92,10 +96,45 @@ func Auth(router *gin.Engine) {
             return
         }
 
-        // wouldn't do this normally, it's just to see if it's working
+        // Register new jwt claims
+        accessClaims := jwt.MapClaims {
+            "sub": user.ID,
+            "exp": jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+            "iat": jwt.NewNumericDate(time.Now()),
+            "iss": "this-backend-needs-an-iss-id",
+            "role": "user-role",
+            "type": "access",
+        }
+        refreshClaims := jwt.MapClaims {
+            "exp": jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+            "iat": jwt.NewNumericDate(time.Now()),
+            "iss": "this-backend-needs-an-iss-id",
+            "type": "refresh",
+        }
+
+        // Sign access token
+        accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+        accessString, err := accessToken.SignedString([]byte(os.Getenv("AUTH_SECRET")))
+        if err != nil {
+            context.JSON(http.StatusInternalServerError, gin.H {
+                "error": "Unexpected error occured. Please try again later",
+            })
+            return
+        }
+        // Sign refresh token
+        refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+        refreshString, err := refreshToken.SignedString([]byte(os.Getenv("AUTH_SECRET")))
+
+        if err != nil {
+            context.JSON(http.StatusInternalServerError, gin.H {
+                "error": "Unexpected error occured. Please try again later",
+            })
+            return
+        }
+
         context.JSON(http.StatusOK, gin.H {
-            "message": user,
-            "status": "logged in",
+            "access": accessString,
+            "refresh": refreshString,
         })
     })
 
