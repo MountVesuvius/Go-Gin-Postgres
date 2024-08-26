@@ -98,9 +98,9 @@ straight coding tasks:
 - [x] connected Air to have hot reloading during development
 - [x] signing jwt access and refresh tokens
 - [x] writing the authentication middleware
-- [ ] roles for users
-- [ ] refresh access token
-- [ ] middleware auth for multiple roles
+- [x] roles for users
+- [x] refresh access token
+- [x] middleware auth for multiple roles
 
 coding but still vague
 - [ ] figure out how unit tests

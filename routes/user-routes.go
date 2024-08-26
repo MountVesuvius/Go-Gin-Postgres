@@ -4,6 +4,7 @@ package routes
 import (
 	"github.com/MountVesuvius/go-gin-postgres-template/controllers"
 	"github.com/MountVesuvius/go-gin-postgres-template/middleware"
+	"github.com/MountVesuvius/go-gin-postgres-template/models"
 	"github.com/MountVesuvius/go-gin-postgres-template/services"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +16,10 @@ func User(router *gin.Engine, controller controllers.UserController, jwtService 
     routes.POST("/signup", controller.Signup)
     routes.POST("/login", controller.Login)
 
-    // temp route remember to delete
+    // temp routes remember to delete
+    // Validates the jwt auth processes
     routes.GET("/validate", middleware.Authenticate(jwtService), controller.Validate)
+    // Validates that the routerGaurd works
+    routes.GET("/validate/role", middleware.Authenticate(jwtService), middleware.RouterGuard(models.UserRoleAdmin), controller.Validate)
 }
 

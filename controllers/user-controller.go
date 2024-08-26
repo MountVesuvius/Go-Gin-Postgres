@@ -34,7 +34,7 @@ func NewUserController(js services.JWTService) UserController {
 
 // temp route to do some quick testing
 func (u *userController) Validate (context *gin.Context) {
-    tokenString, err := u.jwtService.GenerateAccessToken("username", "role")
+    tokenString, err := u.jwtService.GenerateAccessToken("192387", models.UserRoleGeneral)
     if err != nil {
         fmt.Println("Error creating JWT:", err)
         return

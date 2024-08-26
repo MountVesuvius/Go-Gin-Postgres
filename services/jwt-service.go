@@ -8,13 +8,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
 type (
     JWTService interface {
         GenerateAccessToken(string, string) (string, error) 
         GenerateRefreshToken(string, string) (string, error)
         ValidateToken(string) (*jwt.Token, error)
         RefreshToken(string) (string, error)
+        GetTokenClaims(token *jwt.Token) (jwt.MapClaims, error)
     }
 
     jwtService struct {
@@ -38,7 +38,7 @@ func (j *jwtService) GenerateAccessToken(userId string, role string) (string, er
         "exp": jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
         "iat": jwt.NewNumericDate(time.Now()),
         "iss": "this-backend-needs-an-iss-id",
-        "role": "user-role",
+        "role": role,
         "type": "access",
     })
 
@@ -54,10 +54,10 @@ func (j *jwtService) GenerateRefreshToken(userId string, role string) (string, e
     // Create refresh claims (last one day)
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
         "sub": userId,
-        "exp": jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+        "exp": jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
         "iat": jwt.NewNumericDate(time.Now()),
         "iss": "this-backend-needs-an-iss-id",
-        "role": "user-role",
+        "role": role,
         "type": "refresh",
     })
 
@@ -88,6 +88,15 @@ func (j *jwtService) ValidateToken (tokenString string) (*jwt.Token, error) {
     return token, nil
 }
 
+func (j *jwtService) GetTokenClaims(token *jwt.Token) (jwt.MapClaims, error) {
+    // Make sure the token is valid in the first place
+    claims, ok := token.Claims.(jwt.MapClaims)
+    if !ok || !token.Valid {
+        return nil, fmt.Errorf("Invalid Token")
+    }
+    return claims, nil
+}
+
 // Must be a refresh token when requesting an access token refresh.
 // Will help mitigate stupid requests a little bit
 func (j *jwtService) RefreshToken(tokenString string) (string, error) {
@@ -96,10 +105,9 @@ func (j *jwtService) RefreshToken(tokenString string) (string, error) {
         return "", err
     }
 
-    // Make sure the token is valid in the first place
-    claims, ok := token.Claims.(jwt.MapClaims)
-    if !ok || !token.Valid {
-        return "", fmt.Errorf("Invalid Token")
+    claims, err := j.GetTokenClaims(token)
+    if err != nil {
+        return "", err
     }
 
     // Tokens must be refresh tokens to request refresh
@@ -127,3 +135,4 @@ func (j *jwtService) RefreshToken(tokenString string) (string, error) {
 
     return newAccessToken, nil
 }
+

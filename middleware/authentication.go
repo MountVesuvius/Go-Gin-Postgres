@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -39,7 +38,21 @@ func Authenticate(jwtService services.JWTService) gin.HandlerFunc {
             context.AbortWithStatusJSON(http.StatusUnauthorized, response)
         }
 
-        fmt.Println("Token is valid", token)
+        // These bottom two are somewhat unlikely....
+        claims, err := jwtService.GetTokenClaims(token)
+        if err != nil {
+            response := helpers.BuildFailedResponse("Claims missing from Token", nil, token)
+            context.AbortWithStatusJSON(http.StatusUnauthorized, response)
+        }
+
+        userRole, ok := claims["role"].(string)
+        if !ok {
+            response := helpers.BuildFailedResponse("User Role missing from Token", nil, token)
+            context.AbortWithStatusJSON(http.StatusUnauthorized, response)
+        }
+
+        // Router Guard needs to know the role of the user
+        context.Set("userRole", userRole)
         context.Next()
     }
 }
