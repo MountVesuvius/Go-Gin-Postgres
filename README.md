@@ -8,6 +8,14 @@
 This project runs containerized so there should be no issues getting it off the ground. Please make sure that either your docker daemon is running, or you have Docker Desktop open (which does essentially the same thing.)
 
 ### Starting for the first time
+You will need to setup the environment variables used in this project. Start by copying the `.env.exanple` to `.env`. The command to do so in the terminal if you need it is (assuming you are in the root of the project):
+
+```
+cp .env.example .env
+```
+
+Then fill out the contents of the `.env` file. Note that the `AUTH_SECRET` is a 32 character string and should be completely random.
+
 To start the project for the first time run:
 
 ```cli
@@ -90,7 +98,9 @@ straight coding tasks:
 - [x] connected Air to have hot reloading during development
 - [x] signing jwt access and refresh tokens
 - [x] writing the authentication middleware
+- [ ] roles for users
 - [ ] refresh access token
+- [ ] middleware auth for multiple roles
 
 coding but still vague
 - [ ] figure out how unit tests
@@ -104,4 +114,8 @@ doco
 - [x] writing a quickstart guide
 - [ ] writing doco for all of this
 
+
+possibly...
+- [ ] middleware logging for all requests (ISO9001, ISO27001)
+- [ ] metadata that is attached with calls (100% needed just need to think about it a bit more) db column
 

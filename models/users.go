@@ -9,3 +9,5 @@ type User struct {
     Email string `gorm:"unique"` // will add an ID, Created, Updated, Deleted column
     Password string
 }
+
+// roles: demo, patient, healthcareworker, integration, admin

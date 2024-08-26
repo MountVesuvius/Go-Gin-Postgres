@@ -11,9 +11,10 @@ import (
 
 type (
     JWTService interface {
-        GenerateAccessToken(userId string, role string) (string, error) 
-        GenerateRefreshToken() (string, error)
-        ValidateToken(token string) (*jwt.Token, error)
+        GenerateAccessToken(string, string) (string, error) 
+        GenerateRefreshToken(string, string) (string, error)
+        ValidateToken(string) (*jwt.Token, error)
+        RefreshToken(string) (string, error)
     }
 
     jwtService struct {
@@ -49,12 +50,14 @@ func (j *jwtService) GenerateAccessToken(userId string, role string) (string, er
     return tokenString, nil
 }
 
-func (j *jwtService) GenerateRefreshToken() (string, error) {
+func (j *jwtService) GenerateRefreshToken(userId string, role string) (string, error) {
     // Create refresh claims (last one day)
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
-        "exp": jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+        "sub": userId,
+        "exp": jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
         "iat": jwt.NewNumericDate(time.Now()),
         "iss": "this-backend-needs-an-iss-id",
+        "role": "user-role",
         "type": "refresh",
     })
 
@@ -83,4 +86,44 @@ func (j *jwtService) ValidateToken (tokenString string) (*jwt.Token, error) {
         return nil, fmt.Errorf("Invalid Token")
     }
     return token, nil
+}
+
+// Must be a refresh token when requesting an access token refresh.
+// Will help mitigate stupid requests a little bit
+func (j *jwtService) RefreshToken(tokenString string) (string, error) {
+    token, err := j.ValidateToken(tokenString)
+    if err != nil {
+        return "", err
+    }
+
+    // Make sure the token is valid in the first place
+    claims, ok := token.Claims.(jwt.MapClaims)
+    if !ok || !token.Valid {
+        return "", fmt.Errorf("Invalid Token")
+    }
+
+    // Tokens must be refresh tokens to request refresh
+    tokenType, ok := claims["type"].(string)
+    if !ok || tokenType != "refresh" {
+        return "", fmt.Errorf("Invalid token type: Not a refresh token")
+    }
+
+    // UserId needed for new access token
+    userId, ok := claims["sub"].(string)
+    if !ok {
+        return "", fmt.Errorf("Invalid Token: User ID is missing")
+    }
+
+    // User role needed for new access token
+    role, ok := claims["role"].(string)
+    if !ok {
+        return "", fmt.Errorf("Invalid Token: User Role is missing")
+    }
+
+    newAccessToken, err := j.GenerateAccessToken(userId, role)
+    if err != nil {
+        return "", err
+    }
+
+    return newAccessToken, nil
 }

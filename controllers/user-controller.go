@@ -134,7 +134,7 @@ func (u *userController) Login (context *gin.Context) {
     if err != nil {
         fmt.Println("Access token error:", err)
     }
-    refreshToken, err := u.jwtService.GenerateRefreshToken()
+    refreshToken, err := u.jwtService.GenerateRefreshToken(userIdString, "user")
     if err != nil {
         fmt.Println("refresh token error:", err)
     }
