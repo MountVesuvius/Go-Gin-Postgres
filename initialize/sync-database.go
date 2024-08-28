@@ -4,5 +4,8 @@ import "github.com/MountVesuvius/go-gin-postgres-template/models"
 
 // Auto migrate the table
 func SyncDatabase() {
-    DB.AutoMigrate(&models.User{})
+    err := DB.AutoMigrate(&models.User{})
+    if err != nil {
+        panic("Failed to sync the database")
+    }
 }

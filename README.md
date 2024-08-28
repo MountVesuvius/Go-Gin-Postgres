@@ -87,44 +87,5 @@ Will place the controller template structure here when I've built the template f
 ### Services 
 Will place the service template structure here when I've built the template file.
 
----
-
-Current Dev tasks
-straight coding tasks:
-- [x] dockerfile written
-- [x] docker compose together
-- [x] setup connection between postgres and backend using gorm
-- [x] basic user model to test jwt auth
-- [x] connected Air to have hot reloading during development
-- [x] signing jwt access and refresh tokens
-- [x] writing the authentication middleware
-- [x] roles for users
-- [x] refresh access token
-- [x] middleware auth for multiple roles
-- [ ] Rate limiting?
-- [ ] only https traffic
-- [ ] setup CORS (Cross Origin Resource Sharing)
-- [ ] possible look into CSRF (Cross Site Request Forgery)
-- [ ] setup swagger api documentation
-- [ ] possibly some sort of health checks (not sure what to really do here)
-- [ ] setup a query caching example
-- [ ] background job queue?? (not sure if this fits here...)
-- [ ] better api versioning (put a system in place)
-- [ ] figure out how to serve static files (will need a cdn (content delivery network) for that)
-- [ ] rate limiting?
-- [ ] figure out how unit tests
-- [ ] write the runner for the automated unit tests
-
-coding but still vague
-- [ ] write the service & controller template we will use for each part of the project
-
-research
-- [ ] doing some additional research on bcrypt cost (i’m a little worried about it)
-
-doco
-- [x] writing a quickstart guide
-- [ ] writing doco for all of this
-
-possibly...
-- [ ] middleware logging for all requests (ISO9001, ISO27001)
-- [ ] metadata that is attached with calls (100% needed just need to think about it a bit more) db column
+## Testing the Project
+Linting is done using `golangci-lint run`, which will show all the errors in the project. There is also an action runner that will do the same, but ideally the linting should be run locally first before the runner has to pick it up.
