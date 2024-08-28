@@ -2,7 +2,6 @@ name: Project Linting
 
 on:
   push:
-    # Will be present on every branch
     branches:
       - '**'
 
@@ -14,6 +13,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+        # Caching the runner 
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Set up Go
         uses: actions/setup-go@v4
