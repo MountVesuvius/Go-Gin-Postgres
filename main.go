@@ -32,5 +32,9 @@ func main() {
     router := gin.Default()
     routes.User(router, userController, jwtService)
     routes.Auth(router, jwtService)
-    router.Run()
+
+    routerErr := router.Run()
+    if routerErr != nil {
+        log.Fatal("Router has not started", err)
+    }
 }
