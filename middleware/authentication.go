@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -50,6 +51,8 @@ func Authenticate(jwtService services.JWTService) gin.HandlerFunc {
             response := helpers.BuildFailedResponse("User Role missing from Token", nil, token)
             context.AbortWithStatusJSON(http.StatusUnauthorized, response)
         }
+
+        log.Println(userRole)
 
         // Router Guard needs to know the role of the user
         context.Set("userRole", userRole)

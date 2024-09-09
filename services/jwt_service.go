@@ -24,7 +24,7 @@ type (
 )
 
 func NewJWTService() JWTService {
-    return &jwtService{
+    return &jwtService {
         secretKey: []byte(os.Getenv("AUTH_SECRET")),
         issuer: os.Getenv("ISSUER"),
     }

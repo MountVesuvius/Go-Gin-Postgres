@@ -1,8 +1,8 @@
 package initialize
 
 import (
-	"os"
 	"fmt"
+	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -27,3 +27,19 @@ func ConnectToDatabase() {
     }
 
 }
+
+// Function of mass destruction 
+// func dropAllTables() error {
+//     var tables []string
+//     log.Println("Dropped all tables")
+// 	DB.Raw("SELECT tablename FROM pg_tables WHERE schemaname = 'public'").Scan(&tables)
+//
+// 	for _, table := range tables {
+// 		err := DB.Migrator().DropTable(table)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+//
+// 	return nil
+// }
