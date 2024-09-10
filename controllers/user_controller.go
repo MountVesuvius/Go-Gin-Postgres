@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -18,6 +18,7 @@ type (
         Register(context *gin.Context)
         Login (context *gin.Context)
         GetUserById(context *gin.Context)
+        Admin(context *gin.Context)
     }
 
     userController struct {
@@ -31,26 +32,6 @@ func NewUserController(js services.JWTService, us services.UserService) UserCont
         jwtService: js,
         userService: us,
     }
-}
-
-// temp route to do some quick testing
-func (u *userController) Validate (context *gin.Context) {
-    tokenString, err := u.jwtService.GenerateAccessToken("192387", models.UserRoleGeneral)
-    if err != nil {
-        fmt.Println("Error creating JWT:", err)
-        return
-    }
-
-    token, err := u.jwtService.ValidateToken(tokenString)
-    if err != nil {
-        fmt.Println("Error validating JWT:", err)
-        return
-    }
-    // controller code
-    context.JSON(http.StatusOK, gin.H {
-        "string": tokenString,
-        "parsed": token,
-    })
 }
 
 // Register first checks that the payload matches the expected input, then attempts to
@@ -93,16 +74,27 @@ func (u *userController) Login(context *gin.Context) {
 
     // 2. User Login
     user, err := u.userService.Login(payload.Password, payload.Email)
+    if err != nil {
+        response := helpers.BuildFailedResponse("Wrong Username or Password", err, nil)
+        context.JSON(http.StatusBadRequest, response)
+        return
+    }
 
     // 3. Register new JWT claims
     userIdString := strconv.FormatUint(uint64(user.ID), 10)
     accessToken, err := u.jwtService.GenerateAccessToken(userIdString, user.Role)
     if err != nil {
-        fmt.Println("Access token error:", err)
+        log.Println("JWT ERROR OCCURED:", err)
+        response := helpers.BuildFailedResponse("Internal Server Error", nil, nil)
+        context.JSON(http.StatusInternalServerError, response)
+        return
     }
     refreshToken, err := u.jwtService.GenerateRefreshToken(userIdString, user.Role)
     if err != nil {
-        fmt.Println("refresh token error:", err)
+        log.Println("JWT ERROR OCCURED:", err)
+        response := helpers.BuildFailedResponse("Internal Server Error", nil, nil)
+        context.JSON(http.StatusInternalServerError, response)
+        return
     }
 
     // Custom response to save on space
@@ -122,6 +114,18 @@ func (u *userController) GetUserById(context *gin.Context) {
         return 
     }
 
-    response := helpers.BuildSuccessfulResponse("User was found", user)
+    // Trying not to give out passwords for free
+    displayUser := dto.DisplayUser{
+        Role: user.Role,
+        Email: user.Email,
+        Name: user.Name,
+    }
+
+    response := helpers.BuildSuccessfulResponse("User was found", displayUser)
+    context.JSON(http.StatusOK, response)
+}
+
+func (u *userController) Admin(context *gin.Context) {
+    response := helpers.BuildSuccessfulResponse("You are an admin", "smile")
     context.JSON(http.StatusOK, response)
 }

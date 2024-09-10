@@ -16,10 +16,19 @@ func User(router *gin.Engine, controller controllers.UserController, jwtService 
     routes.POST("/register", controller.Register)
     routes.POST("/login", controller.Login)
 
-    routes.GET("", middleware.Authenticate(jwtService),
+    routes.GET(
+        "",
+        middleware.Authenticate(jwtService),
         middleware.RouterGuard(models.UserRoleGeneral, models.UserRoleAdmin),
         controller.GetUserById,
     )
+    routes.GET(
+        "/admin",
+        middleware.Authenticate(jwtService),
+        middleware.RouterGuard(models.UserRoleAdmin),
+        controller.Admin,
+    )
+
     // update user role - admin only
     // delete user - admin only
     // update user's name - user and admin

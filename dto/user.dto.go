@@ -12,3 +12,10 @@ type GetUserById struct {
 type Body struct {
     Token string
 }
+
+// wip
+type DisplayUser struct {
+    Name string
+    Email string
+    Role string
+}
