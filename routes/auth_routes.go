@@ -12,11 +12,8 @@ type Body struct {
     Token string
 }
 
-// TODO: refresh access token
-// don't really feel like building a service for this when i can just slap it all in here
-// not really a lot of code
 func Auth(router *gin.Engine, jwtService services.JWTService) {
-    routes := router.Group("/api/auth")
+    routes := router.Group("/api/v1/auth")
 
     // should send in the refresh token that was generated on login to refresh
     routes.POST("/refresh", func (context *gin.Context) {

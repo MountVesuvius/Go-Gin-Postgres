@@ -24,9 +24,10 @@ func main() {
 
     // Setup Services
     jwtService := services.NewJWTService()
+    userService := services.NewUserService()
 
     // Setup Controllers
-    userController := controllers.NewUserController(jwtService)
+    userController := controllers.NewUserController(jwtService, userService)
 
     // Setup Router
     router := gin.Default()

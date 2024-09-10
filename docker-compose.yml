@@ -33,6 +33,8 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf # Mount the custom pg_hba.conf
+    command: ["postgres", "-c", "config_file=/var/lib/postgresql/data/postgresql.conf"] # PostgreSQL uses custom configuration
 
 volumes:
   db_data:

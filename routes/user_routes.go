@@ -11,15 +11,28 @@ import (
 
 // User route controller. All requests will come in through this and be send to the appropriate user controller
 func User(router *gin.Engine, controller controllers.UserController, jwtService services.JWTService) {
-	routes := router.Group("/api/user") 
+	routes := router.Group("/api/v1/user/") 
 
-    routes.POST("/signup", controller.Signup)
+    routes.POST("/register", controller.Register)
     routes.POST("/login", controller.Login)
 
-    // temp routes remember to delete
-    // Validates the jwt auth processes
-    routes.GET("/validate", middleware.Authenticate(jwtService), controller.Validate)
-    // Validates that the routerGaurd works
-    routes.GET("/validate/role", middleware.Authenticate(jwtService), middleware.RouterGuard(models.UserRoleAdmin), controller.Validate)
-}
+    routes.GET(
+        "",
+        middleware.Authenticate(jwtService),
+        middleware.RouterGuard(models.UserRoleGeneral, models.UserRoleAdmin),
+        controller.GetUserById,
+    )
+    routes.GET(
+        "/admin",
+        middleware.Authenticate(jwtService),
+        middleware.RouterGuard(models.UserRoleAdmin),
+        controller.Admin,
+    )
 
+    // update user role - admin only
+    // delete user - admin only
+    // update user's name - user and admin
+        // user via me, admin via id
+        // possibly two routes
+
+}
