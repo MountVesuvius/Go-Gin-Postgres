@@ -18,6 +18,7 @@ services:
       - database # Will not start running till the db starts up
     environment:
       - DB_HOST=database
+      - DB_PORT=5432
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
@@ -33,8 +34,12 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf # Mount the custom pg_hba.conf
+      # - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf # Mount the custom pg_hba.conf
     command: ["postgres", "-c", "config_file=/var/lib/postgresql/data/postgresql.conf"] # PostgreSQL uses custom configuration
 
 volumes:
   db_data:
+
+networks:
+  defaults:
+    driver: bridge
